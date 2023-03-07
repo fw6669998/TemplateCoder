@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>jsTree test</title>
+    <!-- 包含主题模板CSS文件 -->
+    <link rel="stylesheet" href="dist/themes/default/style.min.css"/>
+    <!-- 包含jQuery库 -->
+    <script src="dist/js/jquery-1.12.1.js"></script>
+    <!-- 缩小的jstree源文件 -->
+    <script src="dist/js/jstree.min.js"></script>
+    <link rel="stylesheet" href="dist/css/default.min.css">
+    <script src="dist/js/highlight.min_11.6.0.js"></script>
+</head>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        /*background-color: #e2dfdf;*/
+    }
+
+    .container {
+        height: 100%;
+        /*border: 1px solid #ccc;*/
+        overflow: auto;
+        overflow-y: scroll;
+        float: left;
+        /*padding-left: 3px;*/
+    }
+
+    #tableContainer {
+        width: 20%;
+    }
+
+    #templateContainer {
+        width: 30%;
+    }
+
+    #viewContainer {
+        width: 50%;
+    }
+
+    #templateView {
+        height: 50%;
+        /*overflow: auto;*/
+        overflow-y: scroll;
+    }
+
+    #templateParamView {
+        height: 50%;
+        /*overflow: auto;*/
+        overflow-y: scroll;
+    }
+
+    .viewItem {
+        border: 1px solid #ccc;
+        margin: 5px;
+        padding: 5px;
+    }
+
+    .block {
+        border: 1px solid #ccc;
+        margin: 5px;
+        padding: 5px;
+    }
+
+    .title {
+        font-size: 15px;
+        font-weight: bold;
+        text-align: center;
+        margin: 5px;
+    }
+
+    #dbSelect {
+        width: 50%;
+        height: 25px
+    }
+
+    #dbSelect option {
+        height: 25px;
+    }
+</style>
+<body>
+<div id="tableContainer" class="container">
+
+    <div class="title">数据表</div>
+    <div style="width: 100%;margin-left: 10px">
+        <label for="dbSelect">数据库:</label>
+        <select id="dbSelect">
+        </select>
+    </div>
+    <div id="tableTree"></div>
+</div>
+<div id="templateContainer" class="container">
+    <div id="templateView">
+        <div class="title">模板列表</div>
+        <div id="templateTree">
+        </div>
+    </div>
+    <div id="templateParamView">
+        <hr>
+        <div class="title">
+            模板参数
+        </div>
+        <div id="templateParam"></div>
+    </div>
+</div>
+<div id="viewContainer" class="container">
+    <div class="title">生成内容</div>
+    <div class="viewItem">
+        <button onclick="generate()">开始生成内容</button>
+    </div>
+    <div id="view">
+    </div>
+</div>
+
+<script>
+    //type:success, error, info
+    //time:ms
+    function displayAlert(type, data, time = 1000) {
+        var lunbo = document.createElement("div");
+
+        if (type == "success") {
+            lunbo.style.backgroundColor = "#009900";
+        } else if (type == "error") {
+            lunbo.style.backgroundColor = "#990000";
+        } else if (type == "info") {
+            lunbo.style.backgroundColor = "#e6b800";
+        } else {
+            console.log("入参type错误");
+            return;
+        }
+
+        lunbo.id = "lunbo";
+        lunbo.style.position = "absolute";
+        lunbo.style.width = "200px";
+        lunbo.style.height = "60px";
+        lunbo.style.marginLeft = "-100px";
+        lunbo.style.marginTop = "-30px";
+        lunbo.style.left = "90%";
+        lunbo.style.top = "15%";
+        lunbo.style.color = "white";
+        lunbo.style.fontSize = "25px";
+        lunbo.style.borderRadius = "20px";
+        lunbo.style.textAlign = "center";
+        lunbo.style.lineHeight = "60px";
+
+        if (document.getElementById("lunbo") == null) {
+            document.body.appendChild(lunbo);
+            lunbo.innerHTML = data;
+            setTimeout(function () {
+                document.body.removeChild(lunbo);
+            }, time);
+        }
+    }
+
+    function copyText(str) {
+        var isCopy = false;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(str).then(function () {
+                displayAlert("success", "复制成功");
+                isCopy = true;
+            });
+        }
+        if (!isCopy) {
+            var input = document.createElement("input");
+            var body = document.querySelector("body");
+            body.append(input);
+            input.value = str
+            input.select();
+            if (document.execCommand("copy")) {
+                displayAlert("success", "复制成功");
+            } else {
+                displayAlert("error", "复制失败");
+            }
+            input.remove();
+        }
+    }
+
+    function httpGet(url, data, callback) {
+        $.ajax({
+            url: url,
+            type: "get",
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                callback(data);
+            }
+        });
+    }
+
+    function httpPost(url, data, callback) {
+        $.ajax({
+            url: url,
+            type: "post",
+            dataType: "json",
+            data: data,
+            success: function (data) {
+                callback(data);
+            }
+        });
+    }
+
+    function bindData(template, paramKey, input) {
+        console.log(template, paramKey, input.value);
+        if ($.paramDefine[template][paramKey] !== input.value) {
+            $.paramDefine[template][paramKey] = input.value;
+            httpGet('api/setParam.php', {'template': template, 'params': $.paramDefine[template]}, function (data) {
+                console.log(data);
+            });
+        }
+    }
+
+    function appendTemplateParamHtml(file, params) {
+        var html = "";
+        html += "<div class=\"block\">模板: " + file;
+        for (const paramKey in params) {
+            html += "<div>" + paramKey + ": <input type=\"text\" name='" + file + "_" + paramKey + "' value='"
+                + params[paramKey] + "' onchange=\"bindData('" + file + "','" + paramKey + "',this)\"></div>";
+        }
+        html += "</div>";
+        //追加内容html到页面
+        // var oldHtml = $("#templateParam").html();
+        $("#templateParam").append(html);
+    }
+
+    function getParamDefine(template) {
+        if ($.paramDefine[template] !== undefined) {
+            appendTemplateParamHtml(template, $.paramDefine[template]);
+            return;
+        }
+        $.paramDefine[template] = null;
+        httpGet('template/' + template, {getParamDefine: 1}, function (data) {
+            //判断data是否是json
+            if (typeof data != "object" || data['paramDefine'] === undefined) {
+                return;
+            }
+            var params = data['paramDefine'];
+            $.paramDefine[template] = params;
+            appendTemplateParamHtml(template, params);
+        });
+    }
+
+    function generate() {
+        //清空view,防止重复生成
+        $("#view").html("");
+        var tables = $('#tableTree').jstree(true).get_selected();
+        var templates = $('#templateTree').jstree(true).get_selected();
+        if (tables.length == 0) {
+            tables = ['tableName'];
+        }
+        for (const table of tables) {
+            for (const template of templates) {
+                //template不是.php结尾的不生成
+                if (!template.endsWith(".php")) {
+                    continue;
+                }
+                httpPost("/api/generate.php",
+                    {
+                        table: table,
+                        template: template,
+                        params: $.paramDefine[template],
+                        __db: $("#dbSelect").val()
+                    },
+                    function (data) {
+                        var codeItem = '';
+                        codeItem += "<div class=\"viewItem\">\n" +
+
+                            "<table>" +
+                            "<tr><td>来源表: </td><td>" + data.table + "</td></tr>" +
+                            "<tr><td>来源模板: </td><td>" + data.template + "</td></tr>" +
+                            "<tr><td>保存文件位置: </td><td>" + data.path + "</td></tr>" +
+                            "</table>" +
+                            "            <div>生成内容: <button class=\"copy\">复制</button></div>\n" +
+                            "            <div>\n" +
+                            "            <pre>\n" +
+                            "                <code class=\"code\">\n" + data.content +
+                            "                </code>\n" +
+                            "            </pre>\n" +
+                            "            </div>\n" +
+                            "        </div>";
+                        // console.log(allCode);
+                        //清除原有内容
+                        // $('#view').html('');
+                        $('#view').append(codeItem);
+                        hljs.highlightAll();
+                        $(".copy").click(function () {
+                            var text = $(this).parent().next().find("code").text();
+                            copyText(text);
+                        });
+                    });
+            }
+        }
+    }
+
+    $.paramDefine = {};
+    $(function () {
+        var db = localStorage.getItem("__db");
+        var param = {};
+        if (db) {
+            $("#dbSelect").val(db);
+            param.__db = db;
+        }
+        httpGet("/api/tables.php", param, function (data) {
+            $ref = $('#tableTree').jstree({
+                'core': {
+                    'data': data['tables']
+                },
+                "checkbox": {
+                    "keep_selected_style": true
+                },
+                "plugins": ["wholerow", "checkbox", "types"],
+                //配置图标
+                "types": {
+                    "table": {
+                        "icon": "/dist/icon/table.png"
+                    },
+                },
+            });
+            $('#tableTree').on("changed.jstree", function (e, data) {
+                console.log(data.selected);
+            });
+            var options = "";
+            for (const db of data['dbs']) {
+                options += "<option value='" + db + "'>" + db + "</option>";
+            }
+            $('#dbSelect').html(options)
+        });
+
+        httpGet("/api/templates.php", {}, function (data) {
+            $ref = $('#templateTree').jstree({
+                'core': {
+                    'data': data
+                },
+                "checkbox": {
+                    "keep_selected_style": true
+                },
+
+                "plugins": ["wholerow", "checkbox", "types"],
+                //配置图标
+                "types": {
+                    "file": {
+                        "icon": "jstree-file"
+                    },
+                    "folder": {
+                        "icon": "jstree-folder"
+                    },
+                },
+            });
+            $('#templateTree').on("changed.jstree", function (e, data) {
+                // console.log(data.selected);
+                $("#templateParam").html("");
+                for (const item of data.selected) {
+                    if (item.endsWith(".php")) {
+                        getParamDefine(item);
+                    }
+                }
+            });
+        });
+    });
+
+    $('#dbSelect').change(function () {
+        var db = $(this).val();
+        localStorage.setItem("__db", db);
+        httpGet("/api/tables.php", {__db: db}, function (data) {
+            $ref = $('#tableTree').jstree(true);
+            $ref.settings.core.data = data['tables'];
+            $ref.refresh();
+        });
+    });
+</script>
+</body>
+</html>

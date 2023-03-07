@@ -1,0 +1,22 @@
+{
+  "db_test": {
+    "driver": "mysql",
+    "host": "localhost",
+    "database": "test",
+    "username": "root",
+    "password": "12345678",
+    "charset": "utf8",
+    "collation": "utf8_unicode_ci",
+    "prefix": ""
+  },
+  "db_fast": {
+    "driver": "mysql",
+    "host": "localhost",
+    "database": "fast",
+    "username": "root",
+    "password": "12345678",
+    "charset": "utf8",
+    "collation": "utf8_unicode_ci",
+    "prefix": ""
+  }
+}
