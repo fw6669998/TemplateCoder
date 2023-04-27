@@ -12,10 +12,31 @@ class JavaUtil
 
     public static $classAnnotations = [];
 
+    public static $javaTypeFullNames = [
+        "Date" => "java.util.Date",
+    ];
+
 
     public static function addImport($type)
     {
-        self::$imports[$type] = $type;
+        //以java.lang.开头的不需要导入
+        if (strpos($type, 'java.lang.') === 0) {
+            return;
+        }
+        //基本类型不需要导入
+        if (in_array($type, ["int", "long", "double", "float", "boolean", "short", "byte", "char", "byte[]",
+            "Integer", "Long", "Double", "Float", "Boolean", "Short", "Byte", "Character", "String"])) {
+            return;
+        }
+        //如果是全限定名，直接导入
+        if (strpos($type, '.') !== false) {
+            self::$imports[$type] = $type;
+        } else {
+            //如果是简单类型，查找是否有全限定名
+            if (isset(self::$javaTypeFullNames[$type])) {
+                self::$imports[self::$javaTypeFullNames[$type]] = self::$javaTypeFullNames[$type];
+            }
+        }
     }
 
     public static function addClassAnnotation($annotation)
@@ -32,6 +53,9 @@ class JavaUtil
     {
         $res = '';
         $haveAutoDate = false;
+        if ($colInfo->isPrimary) {
+            $res .= "\t@Id" . PHP_EOL;
+        }
         if ($colInfo->getType()->getName() == 'datetime') {
             if ($colInfo->getName() == 'create_time') {
                 $res .= "\t@CreatedDate" . PHP_EOL . "\t" . '@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")' . PHP_EOL;
@@ -48,8 +72,9 @@ class JavaUtil
                 self::addImport('org.springframework.format.annotation.DateTimeFormat');
             }
         }
-        if ($colInfo->isPrimary) {
-            $res .= "\t@Id" . PHP_EOL;
+        //添加自增注解
+        if ($colInfo->getAutoincrement()) {
+            $res .= "\t@GeneratedValue(strategy = GenerationType.IDENTITY)" . PHP_EOL;
         }
 
         return $res;
@@ -57,10 +82,9 @@ class JavaUtil
 
     /**
      * @param Column $colInfo
-     * @param $addImport
      * @return string
      */
-    public static function getJavaType($colInfo, $addImport = true)
+    public static function getJavaType($colInfo)
     {
         $dbType = $colInfo->getType()->getName();
         $dbType = strtolower($dbType);
@@ -99,14 +123,10 @@ class JavaUtil
 //            case 'longtext':
 //            case 'enum':
 //            case 'set':
-//                $javaType = 'String';
+//                $javaType = 'java.lang.String';
 //                break;
         }
-        if ($addImport) {
-            if (in_array($javaType, ['Date'])) {
-                self::addImport($javaType);
-            }
-        }
+        self::addImport($javaType);
         return $javaType;
     }
 
