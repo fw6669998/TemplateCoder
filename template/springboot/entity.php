@@ -34,35 +34,36 @@ package <?=$package?>;
 public class <?= $className ?>{
 
 <? foreach ($cols as $col => $info) { ?>
-<?=JavaUtil::getColumnAnnotation($info)?>
-    private <?=JavaUtil::getJavaType($info)?> <?=$col ?>;
+<?= $info->getComment() ? "\t//" . $info->getComment() . PHP_EOL : '' ?>
+<?= JavaUtil::getColumnAnnotation($info) ?>
+	private <?= JavaUtil::getJavaType($info) ?> <?= $col ?>;
 
 <? } ?>
 <? foreach ($cols as $col => $info) { ?>
-    public <?=JavaUtil::getJavaType($info)?> get<?= ucfirst($col); ?>(){
-        return this.<? echo $col; ?>;
-    }
+	public <?= JavaUtil::getJavaType($info) ?> get<?= ucfirst($col); ?>(){
+		return this.<? echo $col; ?>;
+	}
 
-    public void set<? echo ucfirst($col) . '(' . JavaUtil::getJavaType($info) . ' ' . $col; ?>){
-        this.<? echo $col . '=' . $col; ?>;
-    }
+	public void set<? echo ucfirst($col) . '(' . JavaUtil::getJavaType($info) . ' ' . $col; ?>){
+		this.<? echo $col . '=' . $col; ?>;
+	}
 
 <? } ?>
-    @Override
-    public int hashCode() {
-        return Objects.hash(<?= implode(',', array_keys($cols)) ?>);
-    }
+	@Override
+	public int hashCode() {
+		return Objects.hash(<?= implode(',', array_keys($cols)) ?>);
+	}
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        <?=$className?> that = (<?=$className?>) o;
-        return <?= implode(' && ', array_map(function ($col) {
-                    return 'Objects.equals(' . $col . ', that.' . $col . ')';
-                }, array_keys($cols))) ?>;
-    }
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		<?= $className ?> that = (<?= $className ?>) o;
+		return <?= implode(' && ', array_map(function ($col) {
+	return 'Objects.equals(' . $col . ', that.' . $col . ')';
+}, array_keys($cols))) ?>;
+	}
 
 }
-<?= StringUtil::replacePlaceHolder('{{imports}}', JavaUtil::getImport()) //参数2的内容最后会替换行首{{imports}}的内容?>
+<?= StringUtil::replacePlaceHolder('{{imports}}', JavaUtil::getImport()) //参数2的内容最后会替换行首{{imports}}的内容 ?>
 <?= StringUtil::replacePlaceHolder('{{classAnnotation}}', JavaUtil::getClassAnnotationStr()) ?>

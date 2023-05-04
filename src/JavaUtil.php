@@ -91,6 +91,7 @@ class JavaUtil
         $javaType = "String";
         switch ($dbType) {
             case 'int':
+            case 'integer':
             case 'tinyint':
             case 'smallint':
             case 'mediumint':
