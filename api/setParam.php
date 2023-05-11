@@ -8,7 +8,7 @@ use src\util;
 
 $template = $_GET['template'];
 $params = $_GET['params'];
-$paramFile = $_SERVER['DOCUMENT_ROOT'] . '/template/' . $template . '.json';
+$paramFile = $_SERVER['DOCUMENT_ROOT'] . '/template/' . $template . '/__config.php.json';
 $content = json_encode($params);
 util::saveFile($paramFile, $content);
 util::response($params);

@@ -214,7 +214,7 @@
 
     function appendTemplateParamHtml(file, params) {
         var html = "";
-        html += "<div class=\"block\">模板: " + file;
+        html += "<div class=\"block\">目录: " + file;
         for (const paramKey in params) {
             html += "<div>" + paramKey + ": <input type=\"text\" name='" + file + "_" + paramKey + "' value='"
                 + params[paramKey] + "' onchange=\"bindData('" + file + "','" + paramKey + "',this)\"></div>";
@@ -225,13 +225,32 @@
         $("#templateParam").append(html);
     }
 
-    function getParamDefine(template) {
+    // function getParamDefine(template) {
+    //     if ($.paramDefine[template] !== undefined) {
+    //         appendTemplateParamHtml(template, $.paramDefine[template]);
+    //         return;
+    //     }
+    //     $.paramDefine[template] = null;
+    //     httpGet('template/' + template, {getParamDefine: 1}, function (data) {
+    //         //判断data是否是json
+    //         if (typeof data != "object" || data['paramDefine'] === undefined) {
+    //             return;
+    //         }
+    //         var params = data['paramDefine'];
+    //         $.paramDefine[template] = params;
+    //         appendTemplateParamHtml(template, params);
+    //     });
+    // }
+
+    function getDirParam(template) {
+        //已经获取过参数, 防止重复请求
         if ($.paramDefine[template] !== undefined) {
             appendTemplateParamHtml(template, $.paramDefine[template]);
             return;
         }
+        //获取参数
         $.paramDefine[template] = null;
-        httpGet('template/' + template, {getParamDefine: 1}, function (data) {
+        httpGet('template/' + template+'/__config.php', {getParamDefine: 1}, function (data) {
             //判断data是否是json
             if (typeof data != "object" || data['paramDefine'] === undefined) {
                 return;
@@ -256,11 +275,13 @@
                 if (!template.endsWith(".php")) {
                     continue;
                 }
+                //参数key
+                var directoryPath = template.substring(0, template.lastIndexOf('/'));
                 httpPost("/api/generate.php",
                     {
                         table: table,
                         template: template,
-                        params: $.paramDefine[template],
+                        params: $.paramDefine[directoryPath],
                         __db: $("#dbSelect").val()
                     },
                     function (data) {
@@ -351,10 +372,18 @@
             $('#templateTree').on("changed.jstree", function (e, data) {
                 // console.log(data.selected);
                 $("#templateParam").html("");
+                $dirs = [];
                 for (const item of data.selected) {
+                    console.log(item);
                     if (item.endsWith(".php")) {
-                        getParamDefine(item);
+                        //获取item文件的目录
+                        var directoryPath = item.substring(0, item.lastIndexOf('/'));
+                        $dirs[directoryPath]=1
+                        // getParamDefine(item);    //不从文件获取参数, 从文件夹获取参数
                     }
+                }
+                for (const dir in $dirs) {
+                    getDirParam(dir);
                 }
             });
         });

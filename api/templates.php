@@ -13,4 +13,10 @@ $templateDir = $dir . '/../template';
 $root = [];
 $res = util::getTemplates($templateDir, $templateDir);
 
+for ($i = 0; $i < count($res); $i++) {
+	if ($res[$i]['text'] == '__config.php') {
+		unset($res[$i]);
+	}
+}
+
 util::response($res);

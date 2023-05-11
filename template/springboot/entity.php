@@ -9,10 +9,10 @@ use src\util;
 //获取表名
 $table = $_GET['table'];
 //定义和获取模板参数
-$package = util::param('package', 'com.iuv.domain');
-$savePath = util::param('savePath', '');
-//如果是获取参数的请求，直接结束响应返回参数
-util::returnParamDefine(__FILE__);
+$basePackage = util::param('basePackage');
+$savePath = util::param('baseSavePath') . '\\' . JavaUtil::$packageEntity;
+$package = $basePackage . '.' . JavaUtil::$packageEntity;
+$isExcelEntity = util::param('entityExcel');
 
 $_cols = DB::getColumnInfos($table);
 $cols = StringUtil::colsUpper_($_cols);
@@ -35,7 +35,9 @@ public class <?= $className ?>{
 
 <? foreach ($cols as $col => $info) { ?>
 <?= $info->getComment() ? "\t//" . $info->getComment() . PHP_EOL : '' ?>
+<?= $isExcelEntity ? JavaUtil::getExcelAnnotation($info) : '' ?>
 <?= JavaUtil::getColumnAnnotation($info) ?>
+	<?='@Column(name = "'.$info->getName().'")'.PHP_EOL?>
 	private <?= JavaUtil::getJavaType($info) ?> <?= $col ?>;
 
 <? } ?>
