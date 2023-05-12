@@ -33,7 +33,7 @@ class StringUtil
 
     /**
      * @param $arr
-     * @return \Doctrine\DBAL\Schema\Column[]
+     * @return MyColumn[]
      */
     public static function colsUpper_($arr)
     {

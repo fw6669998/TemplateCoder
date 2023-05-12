@@ -206,7 +206,7 @@
         console.log(template, paramKey, input.value);
         if ($.paramDefine[template][paramKey] !== input.value) {
             $.paramDefine[template][paramKey] = input.value;
-            httpGet('api/setParam.php', {'template': template, 'params': $.paramDefine[template]}, function (data) {
+            httpPost('api/setParam.php', {'template': template, 'params': $.paramDefine[template]}, function (data) {
                 console.log(data);
             });
         }

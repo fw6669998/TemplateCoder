@@ -2,8 +2,6 @@
 
 namespace src;
 
-use Doctrine\DBAL\Schema\Column;
-
 class JavaUtil
 {
 	public static $packageEntity = 'domain';
@@ -51,23 +49,24 @@ class JavaUtil
 
 	/**
 	 * 获取与该列类型相关的注解
-	 * @param Column $colInfo
+	 * @param MyColumn $colInfo
 	 * @return void
 	 */
 	public static function getColumnAnnotation($colInfo)
 	{
 		$res = '';
 		$haveAutoDate = false;
-		if ($colInfo->isPrimary) {
+		if ($colInfo->isPrimaryKey()) {
 			$res .= "\t@Id" . PHP_EOL;
 		}
-		if ($colInfo->getType()->getName() == 'datetime') {
+		if ($colInfo->getType() == 'datetime') {
+			$res .= "\t@DateTimeFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")" . PHP_EOL;
 			if ($colInfo->getName() == 'create_time') {
-				$res .= "\t@CreatedDate" . PHP_EOL . "\t" . '@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")' . PHP_EOL;
+				$res .= "\t@CreatedDate" . PHP_EOL;
 				self::addImport('org.springframework.data.annotation.CreatedDate');
 				$haveAutoDate = true;
 			} else if ($colInfo->getName() == 'update_time') {
-				$res .= "\t@LastModifiedDate" . PHP_EOL . "\t" . '@DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")' . PHP_EOL;
+				$res .= "\t@LastModifiedDate" . PHP_EOL;
 				self::addImport('org.springframework.data.annotation.LastModifiedDate');
 				$haveAutoDate = true;
 			}
@@ -78,7 +77,7 @@ class JavaUtil
 			}
 		}
 		//添加自增注解
-		if ($colInfo->getAutoincrement()) {
+		if ($colInfo->isAutoincrement()) {
 			$res .= "\t@GeneratedValue(strategy = GenerationType.IDENTITY)" . PHP_EOL;
 		}
 
@@ -86,14 +85,14 @@ class JavaUtil
 	}
 
 	/**
-	 * @param Column $colInfo
+	 * @param MyColumn $colInfo
 	 * @return string
 	 */
 	public static function getJavaType($colInfo)
 	{
-		$dbType = $colInfo->getType()->getName();
+		$dbType = $colInfo->getType();
 		$dbType = strtolower($dbType);
-		$javaType = "String";
+		$javaType = "";
 		switch ($dbType) {
 			case 'int':
 			case 'integer':
@@ -122,16 +121,17 @@ class JavaUtil
 			case 'longblob':
 				$javaType = 'byte[]';
 				break;
-//            case 'char':
-//            case 'varchar':
-//            case 'tinytext':
-//            case 'text':
-//            case 'mediumtext':
-//            case 'longtext':
-//            case 'enum':
-//            case 'set':
-//                $javaType = 'java.lang.String';
-//                break;
+			case 'char':
+			case 'varchar':
+			case 'tinytext':
+			case 'text':
+			case 'mediumtext':
+			case 'longtext':
+			case 'enum':
+			case 'set':
+			case 'string':
+				$javaType = 'String';
+				break;
 		}
 		self::addImport($javaType);
 		return $javaType;
@@ -174,7 +174,7 @@ class JavaUtil
 	{
 		$cols = DB::getColumnInfos($table);
 		foreach ($cols as $col) {
-			if ($col->isPrimary) {
+			if ($col->isPrimaryKey()) {
 				return self::getJavaType($col);
 			}
 		}
@@ -183,7 +183,7 @@ class JavaUtil
 
 
 	/**
-	 * @param Column $colInfo
+	 * @param MyColumn $colInfo
 	 * @return string
 	 */
 	public static function getExcelAnnotation($colInfo)
@@ -198,5 +198,11 @@ class JavaUtil
 			return str_replace('Tbl', '', $entityClass);
 		}
 		return $entityClass;
+	}
+
+	public static function isReservedField($fieldName)
+	{
+		$reservedFields = ['id', 'createTime', 'updateTime', 'createBy', 'updateBy', 'creator_id', 'is_delete'];
+		return in_array($fieldName, $reservedFields);
 	}
 }

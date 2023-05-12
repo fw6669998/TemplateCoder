@@ -17,10 +17,10 @@ class util
 			}
 			$path = $dir . '/' . $file;
 			$path2 = str_replace($base . '/', '', $path);
-			if (str_ends_with($path2, '.json')) {
+			if (!is_dir($path) && !str_ends_with($path2, '.php')) {
 				continue;
 			}
-			if ($file == '__config.php') {	//配置文件不是模板
+			if ($file == '__config.php') {    //配置文件不是模板
 				continue;
 			}
 			$node = [
@@ -70,20 +70,11 @@ class util
 	 */
 	public static function param($name, $default = null)
 	{
-		$paramValue = $_GET[$name] ? $_GET[$name] : $default;
+		$paramValue = $_REQUEST[$name] ? $_REQUEST[$name] : $default;
 		//记录需要的参数
 //		self::$needParams[$name] = $paramValue;
 		//返回参数
 		return $paramValue;
-	}
-
-	public static function initParam($param)
-	{
-		//遍历GET参数
-		foreach ($_GET as $key => $value) {
-			$param[$key] = $value;
-		}
-		return $param;
 	}
 
 	/**
@@ -124,5 +115,75 @@ class util
 			mkdir($dir, 0777, true);
 		}
 		return file_put_contents($filePath, $content);
+	}
+
+	/**
+	 * @param MyColumn $colInfo
+	 * @return string
+	 */
+	public static function getApiPostType($colInfo)
+	{
+		$dbType = $colInfo->getType();
+		$dbType = strtolower($dbType);
+		switch ($dbType) {
+			case 'int':
+			case 'integer':
+			case 'tinyint':
+			case 'smallint':
+			case 'mediumint':
+			case 'bigint':
+			case 'boolean':
+			case 'float':
+			case 'double':
+			case 'decimal':
+				$resType = 'Number';
+				break;
+			case 'date':
+			case 'time':
+			case 'year':
+			case 'datetime':
+			case 'timestamp':
+				$resType = 'Date';
+				break;
+			default:
+				$resType = 'String';
+				break;
+//			case 'blob':
+//			case 'tinyblob':
+//			case 'mediumblob':
+//			case 'longblob':
+//				$javaType = 'byte[]';
+//				break;
+//            case 'char':
+//            case 'varchar':
+//            case 'tinytext':
+//            case 'text':
+//            case 'mediumtext':
+//            case 'longtext':
+//            case 'enum':
+//            case 'set':
+//                $javaType = 'java.lang.String';
+//                break;
+		}
+		return $resType;
+	}
+
+	/**
+	 * @param MyColumn $colInfo
+	 * @return string
+	 */
+	public static function getExampleVal($colInfo)
+	{
+		switch (JavaUtil::getJavaType($colInfo)) {
+			case "String":
+				$res = ($colInfo->getComment() ? $colInfo->getComment() : $colInfo->getVarName()) . '{{r}}';
+				break;
+			case "Date":
+				$res = date("Y-m-d H:i:s", time());
+				break;
+			default:
+				$res = 1;
+		}
+		return $res;
 	}
 }

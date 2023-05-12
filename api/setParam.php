@@ -6,8 +6,8 @@ require_once $_SERVER['DOCUMENT_ROOT'] . "/vendor/autoload.php";
 
 use src\util;
 
-$template = $_GET['template'];
-$params = $_GET['params'];
+$template = $_REQUEST['template'];
+$params = $_REQUEST['params'];
 $paramFile = $_SERVER['DOCUMENT_ROOT'] . '/template/' . $template . '/__config.php.json';
 $content = json_encode($params);
 util::saveFile($paramFile, $content);

@@ -1,13 +1,11 @@
 <?php
-
-
 require_once $_SERVER['DOCUMENT_ROOT'] . "/vendor/autoload.php";
 
 use src\StringUtil;
 use src\util;
 use src\JavaUtil;
 
-$table = $_GET['table'];
+$table = util::param('table');
 
 $basePackage = util::param('basePackage');
 $savePath = util::param('baseSavePath') . '\\' . JavaUtil::$packageController;
@@ -16,8 +14,7 @@ $package = $basePackage . '.' . JavaUtil::$packageController;
 $entityClass = StringUtil::upper_AndFirst($table);
 $serviceClass = JavaUtil::clearEntitySuffix($entityClass) . 'Service';
 $controllerClass = JavaUtil::clearEntitySuffix($entityClass) . 'Controller';
-$repositoryClass = $entityClass . 'Repository';
-$repositoryVar = lcfirst($repositoryClass);
+$repositoryVar = lcfirst($serviceClass);
 
 util::setSavePath($savePath, $controllerClass . '.java');
 ?>
@@ -35,10 +32,17 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @Component
-public class <?= $controllerClass ?> {
+@RequestMapping("/<?=JavaUtil::clearEntitySuffix($entityClass)?>")
+public class <?= $controllerClass ?> extends BaseController{
 
-@Autowired
-public <?= $repositoryClass ?> <?= $repositoryVar ?>;
+	@Autowired
+	private <?= $serviceClass ?> <?= $repositoryVar ?>;
 
+	@RequestMapping("/create")
+	@ResponseBody
+	public Map<String, Object> list(HttpServletRequest request, <?=$entityClass?> <?=lcfirst($entityClass)?>) {
+
+		return result(null);
+	}
 
 }

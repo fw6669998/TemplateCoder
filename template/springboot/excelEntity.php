@@ -8,14 +8,13 @@ use src\util;
 use src\Param;
 
 //获取表名
-$table = $_GET['table'];
+$table = util::param('table');
 //定义和获取模板参数
 $basePackage = util::param('basePackage');
 $savePath = util::param('baseSavePath') . '\\' . JavaUtil::$packageEntity;
 $package = $basePackage . '.' . JavaUtil::$packageEntity;
 
-$_cols = DB::getColumnInfos($table);
-$cols = StringUtil::colsUpper_($_cols);
+$cols = DB::getColumnInfos($table);
 //通过表名获取类名
 $className = StringUtil::upper_AndFirst($table);
 //添加保存文件位置到响应头

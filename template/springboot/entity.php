@@ -7,15 +7,14 @@ use src\StringUtil;
 use src\util;
 
 //获取表名
-$table = $_GET['table'];
+$table = util::param('table');
 //定义和获取模板参数
 $basePackage = util::param('basePackage');
 $savePath = util::param('baseSavePath') . '\\' . JavaUtil::$packageEntity;
 $package = $basePackage . '.' . JavaUtil::$packageEntity;
 $isExcelEntity = util::param('entityExcel');
 
-$_cols = DB::getColumnInfos($table);
-$cols = StringUtil::colsUpper_($_cols);
+$cols = DB::getColumnInfos($table);
 //添加需要导入的类
 JavaUtil::addImport('javax.persistence.*');
 JavaUtil::addImport('java.util.Objects');

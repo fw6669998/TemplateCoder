@@ -1,7 +1,7 @@
 <?php
 //$baseDir = 'D:\temp\java\\';
-ini_set('display_errors', true);
-error_reporting(E_ALL ^ E_WARNING ^ E_NOTICE);
+//ini_set('display_errors', true);
+//error_reporting(E_ALL ^ E_WARNING ^ E_NOTICE);
 
 require_once $_SERVER['DOCUMENT_ROOT'] . "/vendor/autoload.php";
 

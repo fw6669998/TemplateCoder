@@ -6,7 +6,7 @@ use src\StringUtil;
 use src\JavaUtil;
 use src\util;
 
-$table = $_GET['table'];
+$table = util::param('table');
 $basePackage = util::param('basePackage');
 $savePath = util::param('baseSavePath'). '\\' . JavaUtil::$packageEntity;
 $package = $basePackage . '.' . JavaUtil::$packageEntity;
