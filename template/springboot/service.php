@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class <?= $serviceClass ?> {
 
-	@Autowired
-	public <?=$repositoryClass?> <?=$repositoryVar?>;
+    @Autowired
+    public <?=$repositoryClass?> repository;
 
 }

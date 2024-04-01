@@ -14,6 +14,8 @@ class DB
 
 	public static $config = [];
 
+	private static $colCache = [];
+
 	public static function getDBConfig()
 	{
 		if (self::$config) {
@@ -70,6 +72,10 @@ class DB
 	 */
 	public static function getColumnInfos($table)
 	{
+		if (isset(self::$colCache[$table])) {
+			return self::$colCache[$table];
+		}
+
 		$conn = self::connect();
 
 		$schema = $conn->getDoctrineSchemaManager();
@@ -96,6 +102,23 @@ class DB
 			}
 			$columns2[$myColumn->getVarName()] = $myColumn;
 		}
+		self::$colCache[$table] = $columns2;
 		return $columns2;
+	}
+
+	/**
+	 * @param $table
+	 * @return MyColumn[]
+	 */
+	public static function getIdColumns($table)
+	{
+		$columns = self::getColumnInfos($table);
+		$ids = [];
+		foreach ($columns as $column) {
+			if ($column->isPrimaryKey()) {
+				$ids[] = $column;
+			}
+		}
+		return $ids;
 	}
 }

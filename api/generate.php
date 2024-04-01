@@ -26,6 +26,7 @@ $resData['template'] = $template;
 $url = $host . 'template/' . $template;
 //添加请求参数
 $param['table'] = $table;
+$param['__db'] = $_POST['__db'];
 $ch = curl_init($url . "?" . http_build_query($param));
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($ch, CURLOPT_HEADER, true);

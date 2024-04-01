@@ -20,7 +20,8 @@ util::setSavePath($savePath, $controllerClass . '.java');
 ?>
 package <?= $package ?>;
 
-import <?= $basePackage . '.service.' . $serviceClass ?>;
+import <?= $basePackage . '.'.JavaUtil::$packageService.'.' . $serviceClass ?>;
+import <?= $basePackage . '.'.JavaUtil::$packageEntity.'.' . $entityClass ?>;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,17 +33,17 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @Component
-@RequestMapping("/<?=JavaUtil::clearEntitySuffix($entityClass)?>")
+@RequestMapping("/api/<?=JavaUtil::clearEntitySuffix($entityClass)?>")
 public class <?= $controllerClass ?> extends BaseController{
 
-	@Autowired
-	private <?= $serviceClass ?> <?= $repositoryVar ?>;
+    @Autowired
+    private <?= $serviceClass ?> service;
 
-	@RequestMapping("/create")
-	@ResponseBody
-	public Map<String, Object> list(HttpServletRequest request, <?=$entityClass?> <?=lcfirst($entityClass)?>) {
+    @RequestMapping("/create")
+    @ResponseBody
+    public Map<String, Object> create(HttpServletRequest request, <?=$entityClass?> data) {
 
-		return result(null);
-	}
+        return result(null);
+    }
 
 }

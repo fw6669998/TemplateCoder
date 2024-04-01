@@ -33,8 +33,8 @@ import com.alibaba.excel.annotation.ExcelProperty;
 public class <?= 'Excel'.$className ?>{
 
 <? foreach ($cols as $col => $info) { ?>
-	<?='@ExcelProperty(value = "'.$info->getComment().'")'.PHP_EOL?>
-	private <?= JavaUtil::getJavaType($info) ?> <?= $col ?>;
+    <?='@ExcelProperty(value = "'.$info->getComment().'")'.PHP_EOL?>
+    private <?= JavaUtil::getJavaType($info) ?> <?= $col ?>;
 
 <? } ?>
 

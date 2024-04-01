@@ -8,8 +8,8 @@ use src\util;
 
 $table = util::param('table');
 $basePackage = util::param('basePackage');
-$savePath = util::param('baseSavePath'). '\\' . JavaUtil::$packageEntity;
-$package = $basePackage . '.' . JavaUtil::$packageEntity;
+$savePath = util::param('baseSavePath'). '\\' . JavaUtil::$packageRepository;
+$package = $basePackage . '.' . JavaUtil::$packageRepository;
 
 $entityPackage = $basePackage . '.' . JavaUtil::$packageEntity;
 $tableName = StringUtil::upper_AndFirst($table);

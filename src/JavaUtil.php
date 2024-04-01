@@ -4,7 +4,7 @@ namespace src;
 
 class JavaUtil
 {
-	public static $packageEntity = 'domain';
+	public static $packageEntity = 'entity';
 	public static $packageController = 'controller';
 	public static $packageService = 'service';
 	public static $packageRepository = 'repository';
@@ -56,11 +56,14 @@ class JavaUtil
 	{
 		$res = '';
 		$haveAutoDate = false;
+		//添加主键注解
 		if ($colInfo->isPrimaryKey()) {
 			$res .= "\t@Id" . PHP_EOL;
 		}
+		//添加时间注解
 		if ($colInfo->getType() == 'datetime') {
 			$res .= "\t@DateTimeFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")" . PHP_EOL;
+			self::addImport('org.springframework.format.annotation.DateTimeFormat');
 			if ($colInfo->getName() == 'create_time') {
 				$res .= "\t@CreatedDate" . PHP_EOL;
 				self::addImport('org.springframework.data.annotation.CreatedDate');
@@ -73,12 +76,16 @@ class JavaUtil
 			if ($haveAutoDate) {
 				self::addClassAnnotation('@EntityListeners(AuditingEntityListener.class)');
 				self::addImport('org.springframework.data.jpa.domain.support.AuditingEntityListener');
-				self::addImport('org.springframework.format.annotation.DateTimeFormat');
 			}
 		}
 		//添加自增注解
 		if ($colInfo->isAutoincrement()) {
 			$res .= "\t@GeneratedValue(strategy = GenerationType.IDENTITY)" . PHP_EOL;
+		}
+		//添加参数校验注解
+		if ($colInfo->getNotnull() && !$colInfo->isAutoincrement() && !$colInfo->isPrimaryKey()) {
+			$res .= "\t@NotNull(message = \"".$colInfo->getShortComment()."不能为空\")" . PHP_EOL;
+			self::addImport('javax.validation.constraints.NotNull');
 		}
 
 		return $res;
@@ -104,6 +111,8 @@ class JavaUtil
 				$javaType = 'Integer';
 				break;
 			case 'float':
+				$javaType = 'Float';
+				break;
 			case 'double':
 			case 'decimal':
 				$javaType = 'Double';

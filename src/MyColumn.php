@@ -74,7 +74,9 @@ class MyColumn
 
 	public function getShortComment()
 	{
-		return explode(":", $this->getComment())[0];
+		$comment = $this->getComment();
+		$comment = str_replace("：", ':', $comment);
+		return explode(":", $comment)[0];
 	}
 
 	public function getNotnull()

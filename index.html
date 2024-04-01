@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>jsTree test</title>
+    <title>代码生成</title>
     <!-- 包含主题模板CSS文件 -->
     <link rel="stylesheet" href="dist/themes/default/style.min.css"/>
     <!-- 包含jQuery库 -->
@@ -250,7 +250,7 @@
         }
         //获取参数
         $.paramDefine[template] = null;
-        httpGet('template/' + template+'/__config.php', {getParamDefine: 1}, function (data) {
+        httpGet('template/' + template + '/__config.php', {getParamDefine: 1}, function (data) {
             //判断data是否是json
             if (typeof data != "object" || data['paramDefine'] === undefined) {
                 return;
@@ -320,7 +320,6 @@
         var db = localStorage.getItem("__db");
         var param = {};
         if (db) {
-            $("#dbSelect").val(db);
             param.__db = db;
         }
         httpGet("/api/tables.php", param, function (data) {
@@ -347,6 +346,9 @@
                 options += "<option value='" + db + "'>" + db + "</option>";
             }
             $('#dbSelect').html(options)
+            if (db) {
+                $("#dbSelect").val(db);
+            }
         });
 
         httpGet("/api/templates.php", {}, function (data) {
@@ -378,7 +380,7 @@
                     if (item.endsWith(".php")) {
                         //获取item文件的目录
                         var directoryPath = item.substring(0, item.lastIndexOf('/'));
-                        $dirs[directoryPath]=1
+                        $dirs[directoryPath] = 1
                         // getParamDefine(item);    //不从文件获取参数, 从文件夹获取参数
                     }
                 }
@@ -398,6 +400,8 @@
             $ref.refresh();
         });
     });
+
+    // $("#dbSelect").val('iuv_iot_product');
 </script>
 </body>
 </html>

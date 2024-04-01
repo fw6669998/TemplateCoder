@@ -55,6 +55,10 @@ class util
 
 	public static function setSavePath($path, $filename)
 	{
+		$tableName = self::param('table');
+		if ($tableName == 'tableName') {
+			return;
+		}
 		if ($path) {
 			if (str_ends_with($path, '/') || str_ends_with($path, '\\')) {
 				$path = substr($path, 0, strlen($path) - 1);

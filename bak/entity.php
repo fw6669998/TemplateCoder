@@ -10,8 +10,14 @@ use src\util;
 $table = util::param('table');
 //定义和获取模板参数
 $basePackage = util::param('basePackage');
-$savePath = util::param('baseSavePath') . '\\' . JavaUtil::$packageEntity;
-$package = $basePackage . '.' . JavaUtil::$packageEntity;
+$savePath = util::param('baseSavePath');
+//从路径中获取包名
+$tempPath=str_replace('\\','.',$savePath);
+$tempPath=str_replace('/','.',$tempPath);
+//查找src\main\java\后面的包名
+$package=substr($tempPath,strpos($tempPath,'src.main.java.')+14);
+//去掉最后的.
+$package=rtrim($package,'.');
 $isExcelEntity = util::param('entityExcel');
 
 $cols = DB::getColumnInfos($table);
@@ -51,20 +57,20 @@ public class <?= $className ?>{
     }
 
 <? } ?>
-	@Override
-	public int hashCode() {
-		return Objects.hash(<?= implode(',', array_keys($cols)) ?>);
-	}
+    @Override
+    public int hashCode() {
+        return Objects.hash(<?= implode(',', array_keys($cols)) ?>);
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) return true;
-		if (o == null || getClass() != o.getClass()) return false;
-		<?= $className ?> that = (<?= $className ?>) o;
-		return <?= implode(' && ', array_map(function ($col) {
-	return 'Objects.equals(' . $col . ', that.' . $col . ')';
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        <?= $className ?> that = (<?= $className ?>) o;
+        return <?= implode(' && ', array_map(function ($col) {
+    return 'Objects.equals(' . $col . ', that.' . $col . ')';
 }, array_keys($cols))) ?>;
-	}
+    }
 
 }
 <?= StringUtil::replacePlaceHolder('{{imports}}', JavaUtil::getImport()) //参数2的内容最后会替换行首{{imports}}的内容 ?>
